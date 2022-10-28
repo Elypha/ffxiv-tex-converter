@@ -2,23 +2,43 @@
 
     pip install kaitaistruct
     pip install numpy
+    pip install tqdm
 
 ---
-## dds_to_tex.py
-Converts DDS to TEX.
+## run.py
+```
+ffxiv-tex-converter, FFXIV TEX FILE CONVERTER
 
-DDS must be in images/test folder as such:
-    
-    images/dds_to_tex/bar.dds
-    images/dds_to_tex/kitten/foo.dds
-
-This will write to:
-
-    output/images/dds_to_tex/bar.tex
-    output/images/dds_to_tex/kitten/bar.tex
-
+options:
+  -h, --help            show this help message and exit
+  --directory -D, -d -D
+                        Initial directory to be processed.
+  --command -C, -c -C   dds-to-tex, tex-to-dds
+  --parallel, --no-parallel, -p
+                        multicore processing
+  --multiplier -M, -m -M
+                        if using multicore processing, job multiplier per core. default = 5
+```
 * Accepts nested directory structures.
 * Supports BGRA, BGRX, BC1 (DXT1), BC2 (DXT3), BC3 (DXT5), and BC7. 
+
+### Usage examples:
+
+**given directory "dog" has dds files I want to convert to FFXIV tex files.**
+
+Run this command: `python run.py -d dog -c dds-to-tex`
+
+I want to run it faster: `python run.py -d dog -c dds-to-tex -p -m 10`
+
+It will output to **"dog_tex"** directory.
+
+**given directory "cat" has FFXIV tex files I want to convert to DDS files.**
+
+Run this command: `python run.py -d cat -c tex_to_dds`
+
+I want to run it faster: `python run.py -d cat -c tex_to_dds -p -m 10`
+
+It will output to **"cat_dds"** directory.
 
 ### Why should I use this over TexTools?
 * TexTools breaks mipmaps. Either by falsely calculating the offset, or just erasing the end of the file.
@@ -32,47 +52,7 @@ This will write to:
 
 I personally still use TexTools for a lot of stuff. Please don't perpetuate cultish behavior around mod tools. It's weird.
 
----
-## tex_to_dds.py
-Converts TEX to DDS.
 
-TEX must be in images/test folder as such:
-    
-    images/tex_to_dds/bar.tex
-    images/tex_to_dds/kitten/foo.tex
-
-This will write to:
-
-    output/images/tex_to_dds/bar.dds
-    output/images/tex_to_dds/kitten/bar.dds
-
-* Accepts nested directory structures.
-* Supports BGRA, BC1 (DXT1), BC2 (DXT3), BC3 (DXT5).
-
----
-## tex_body_repair.py
-
-Reads a pair of DDS, TEX; where DDS body replaces TEX body, to repair botched TexTools write.
-
-DDS, TEX must be in images/tex-body-shop folder as such:
-
-    images/tex-body-shop/bar.dds
-    images/tex-body-shop/bar.tex
-
-This will then write to:
-
-    output/images/tex-body-shop/bar.tex
-
-* Accepts nested directory structures.
-* Is super rudimentary but gets the job done.
-
----
-
-## test.py
-
-just tests my parsers
-
----
 
 # parsers
 

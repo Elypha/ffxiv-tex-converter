@@ -4,9 +4,10 @@ import kaitaistruct
 from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 from enum import Enum, IntFlag
 
-
 if getattr(kaitaistruct, 'API_VERSION', (0, 9)) < (0, 9):
-    raise Exception("Incompatible Kaitai Struct Python API: 0.9 or later is required, but you have %s" % (kaitaistruct.__version__))
+    raise Exception(
+        "Incompatible Kaitai Struct Python API: 0.9 or later is required, but you have %s" % (kaitaistruct.__version__))
+
 
 class Tex(KaitaiStruct):
     def __init__(self, _io, _parent=None, _root=None):
@@ -80,6 +81,7 @@ class Tex(KaitaiStruct):
             ati2 = 25136
             bc7 = 25650
             type_mask = 61440
+
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -101,8 +103,6 @@ class Tex(KaitaiStruct):
             for i in range(13):
                 self.offset_to_surface13.append(self._io.read_u4le())
 
-
-
     class Body(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
@@ -116,7 +116,3 @@ class Tex(KaitaiStruct):
             while not self._io.is_eof():
                 self.data.append(self._io.read_bytes(4))
                 i += 1
-
-
-
-

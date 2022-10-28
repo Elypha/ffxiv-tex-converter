@@ -8,8 +8,8 @@ from struct import pack
 import numpy
 from tqdm import tqdm
 
-from parsers.dds import Dds
-from parsers.tex import Tex
+from src.parsers.dds import Dds
+from src.parsers.tex import Tex
 
 
 def get_dds_height(tex):
@@ -181,7 +181,7 @@ def get_dds_binary(path):
 
 def do_the_thing(input_path):
     # print('given:' + str(input_path))
-    output_path = Path.joinpath(Path('./output'), Path(*input_path.parts[1:]).with_suffix(".dds"))
+    output_path = Path.joinpath(Path('../../output'), Path(*input_path.parts[1:]).with_suffix(".dds"))
     output_path.parent.mkdir(exist_ok=True, parents=True)
     binary = get_dds_binary(input_path)
     with open(output_path, 'wb') as wb:
@@ -203,7 +203,7 @@ def chunks(arr, size):
 
 
 if __name__ == '__main__':
-    p = Path('./images/tex_to_dds')
+    p = Path('../../images/tex_to_dds')
     grabber = list(p.glob('**/*.tex'))
     print(f'Processing {len(grabber)} files.')
     start_time = time.time()

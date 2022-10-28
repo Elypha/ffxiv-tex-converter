@@ -5,7 +5,9 @@ from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 from enum import Enum, IntFlag
 
 if getattr(kaitaistruct, 'API_VERSION', (0, 9)) < (0, 9):
-    raise Exception("Incompatible Kaitai Struct Python API: 0.9 or later is required, but you have %s" % (kaitaistruct.__version__))
+    raise Exception(
+        "Incompatible Kaitai Struct Python API: 0.9 or later is required, but you have %s" % (kaitaistruct.__version__))
+
 
 class Dds(KaitaiStruct):
     def __init__(self, _io, _parent=None, _root=None):
@@ -51,6 +53,7 @@ class Dds(KaitaiStruct):
             ddscaps2_cubemap_positivez = 16384
             ddscaps2_cubemap_negativez = 32768
             ddscaps2_volume = 2097152
+
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -60,7 +63,8 @@ class Dds(KaitaiStruct):
         def _read(self):
             self.magic = self._io.read_bytes(4)
             if not self.magic == b"\x44\x44\x53\x20":
-                raise kaitaistruct.ValidationNotEqualError(b"\x44\x44\x53\x20", self.magic, self._io, u"/types/header/seq/0")
+                raise kaitaistruct.ValidationNotEqualError(b"\x44\x44\x53\x20", self.magic, self._io,
+                                                           u"/types/header/seq/0")
             self.size = self._io.read_u4le()
             self.flags = KaitaiStream.resolve_enum(Dds.Header.FormatFlags, self._io.read_u4le())
             self.height = self._io.read_u4le()
@@ -75,7 +79,6 @@ class Dds(KaitaiStruct):
             self.caps3 = self._io.read_bytes(4)
             self.caps4 = self._io.read_bytes(4)
             self.reserved2 = self._io.read_bytes(4)
-
 
     class DdsPixelformat(KaitaiStruct):
 
@@ -93,6 +96,7 @@ class Dds(KaitaiStruct):
             ddpf_rgb = 64
             ddpf_yuv = 512
             ddpf_luminance = 131072
+
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -108,7 +112,6 @@ class Dds(KaitaiStruct):
             self.g_bit_mask = self._io.read_bytes(4)
             self.b_bit_mask = self._io.read_bytes(4)
             self.a_bit_mask = self._io.read_bytes(4)
-
 
     class HeaderDxt10(KaitaiStruct):
 
@@ -270,6 +273,7 @@ class Dds(KaitaiStruct):
             dds_alpha_mode_premultiplied = 2
             dds_alpha_mode_opaque = 3
             dds_alpha_mode_custom = 4
+
         def __init__(self, _io, _parent=None, _root=None):
             self._io = _io
             self._parent = _parent
@@ -278,11 +282,11 @@ class Dds(KaitaiStruct):
 
         def _read(self):
             self.dxgi_format = KaitaiStream.resolve_enum(Dds.HeaderDxt10.DxgiFormats, self._io.read_u4le())
-            self.d3d10_resource_dimension = KaitaiStream.resolve_enum(Dds.HeaderDxt10.D3d10ResourceDimensionFormats, self._io.read_u4le())
+            self.d3d10_resource_dimension = KaitaiStream.resolve_enum(Dds.HeaderDxt10.D3d10ResourceDimensionFormats,
+                                                                      self._io.read_u4le())
             self.misc_flag = KaitaiStream.resolve_enum(Dds.HeaderDxt10.D3d11ResourceMiscFlags, self._io.read_u4le())
             self.array_size = self._io.read_u4le()
             self.misc_flags2 = KaitaiStream.resolve_enum(Dds.HeaderDxt10.D3d11ResourceMiscFlags2, self._io.read_u4le())
-
 
     class Body(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -298,8 +302,6 @@ class Dds(KaitaiStruct):
                 self.data.append(self._io.read_bytes(4))
                 i += 1
 
-
-
     @property
     def fourcc(self):
         if hasattr(self, '_m_fourcc'):
@@ -310,5 +312,3 @@ class Dds(KaitaiStruct):
         self._m_fourcc = self._io.read_u4le()
         self._io.seek(_pos)
         return getattr(self, '_m_fourcc', None)
-
-

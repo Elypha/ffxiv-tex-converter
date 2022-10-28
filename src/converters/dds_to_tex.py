@@ -1,6 +1,5 @@
 import gc
 import os
-import time
 from multiprocessing import Pool
 from pathlib import Path
 from struct import pack
@@ -9,8 +8,8 @@ import numpy
 from numpy import ushort
 from tqdm import tqdm
 
-from parsers.dds import Dds
-from parsers.tex import Tex
+from src.parsers.tex import Tex
+from src.parsers.dds import Dds
 
 lod_offset = numpy.array([0, 1, 2], dtype=numpy.int32)
 
@@ -124,15 +123,13 @@ def get_tex_binary(path):
 
 
 def do_the_thing(input_path):
-    # print('given:' + str(input_path))
-    output_path = Path.joinpath(Path('./output'), Path(*input_path.parts[1:]).with_suffix(".tex"))
+    output_path = Path.joinpath(Path('../../output'), Path(*input_path.parts[1:]).with_suffix(".tex"))
     output_path.parent.mkdir(exist_ok=True, parents=True)
     binary = get_tex_binary(input_path)
     with open(output_path, 'wb') as wb:
         wb.write(binary)
     del binary
     gc.collect()
-    # print('written:' + str(output_path))
 
 
 def chunks(arr, size):
@@ -147,10 +144,8 @@ def chunks(arr, size):
 
 
 if __name__ == '__main__':
-    p = Path('./images/dds_to_tex/')
+    p = Path('../../images/dds_to_tex/')
     grabber = list(p.glob('**/*.dds'))
-    print(f'Processing {len(grabber)} files.')
-    start_time = time.time()
 
     parallel = True
     if parallel:
@@ -173,5 +168,4 @@ if __name__ == '__main__':
                 gc.collect()
                 pb.update()
 
-    execution_time = (time.time() - start_time)
     print("Execution Time: " + str(round(execution_time)) + " sec")

@@ -1,7 +1,6 @@
 from pathlib import Path
 
-from parsers.dds import Dds
-from parsers.tex import Tex
+from src.parsers import Dds
 
 # just tests my parsers
 

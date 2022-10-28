@@ -118,54 +118,7 @@ def get_tex_binary(path):
                        get_tex_height(dds_binary), get_tex_depth(dds_binary), get_tex_mip_levels(dds_binary))
     header = (header_info + lod_offset.tobytes() + get_tex_offset_array(dds_binary).tobytes())
     body = (b''.join(dds_binary.bd.data))
+    del dds_binary
+    gc.collect()
     tex_binary = header + body
     return tex_binary
-
-
-def do_the_thing(input_path):
-    output_path = Path.joinpath(Path('../../output'), Path(*input_path.parts[1:]).with_suffix(".tex"))
-    output_path.parent.mkdir(exist_ok=True, parents=True)
-    binary = get_tex_binary(input_path)
-    with open(output_path, 'wb') as wb:
-        wb.write(binary)
-    del binary
-    gc.collect()
-
-
-def chunks(arr, size):
-    """
-    split an array into chunks
-    :param arr: the array
-    :param size: size of each chunk
-    :return: yields one chunk of size `size` of `arr`
-    """
-    for i in range(0, len(arr), size):
-        yield arr[i: i + size]
-
-
-if __name__ == '__main__':
-    p = Path('../../images/dds_to_tex/')
-    grabber = list(p.glob('**/*.dds'))
-
-    parallel = True
-    if parallel:
-        core_count = os.cpu_count()
-        # tqdm provides a pretty progress bar
-        with tqdm(total=len(grabber), unit="files") as pb:
-            # core_count * 32 seemed like a good number
-            # if stuff gets slow, lower 32 down to like 24 or something idk.
-            # looping in chunks rather than using the pool directly forces python to clean up its subprocesses and
-            # prevents overflowing memory to disk
-            for chunk in chunks(grabber, core_count // 2):
-                with Pool(core_count) as p:
-                    p.map(do_the_thing, chunk)
-                    gc.collect()
-                pb.update(len(chunk))
-    else:
-        with tqdm(total=len(grabber), unit="files") as pb:
-            for file in grabber:
-                do_the_thing(file)
-                gc.collect()
-                pb.update()
-
-    print("Execution Time: " + str(round(execution_time)) + " sec")

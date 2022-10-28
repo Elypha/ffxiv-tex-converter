@@ -181,7 +181,7 @@ def get_dds_binary(path):
 
 def do_the_thing(input_path):
     # print('given:' + str(input_path))
-    output_path = Path('./output') / str((input_path.with_name(input_path.stem + '.dds')))
+    output_path = Path.joinpath(Path('./output'), Path(*input_path.parts[1:]).with_suffix(".dds"))
     output_path.parent.mkdir(exist_ok=True, parents=True)
     binary = get_dds_binary(input_path)
     with open(output_path, 'wb') as wb:

@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 from src.packageland import handler
-from src.converters import dds_to_tex, tex_to_dds
+from src.converters import dds_to_tex, tex_to_dds, dx10_to_dx9
 
 parser = argparse.ArgumentParser(description="ffxiv-tex-converter, FFXIV TEX FILE CONVERTER")
 parser.add_argument('--directory', '-d', metavar='-D', type=str, help='Initial directory to be processed.',
@@ -22,6 +22,8 @@ def read_command(command):
         return do_the_thing_dds_to_tex
     if 'tex-to-dds' == command.lower():
         return do_the_thing_tex_to_dds
+    if 'dx10-to-dx9' == command.lower():
+        return do_the_thing_dx10_to_dx9
 
 
 def do_the_thing_dds_to_tex(path):
@@ -39,6 +41,16 @@ def do_the_thing_tex_to_dds(path):
     out_path = Path.joinpath(out_folder, Path(*path.parts[1:]).with_suffix('.dds'))
     out_path.parent.mkdir(exist_ok=True, parents=True)
     binary = tex_to_dds.get_dds_binary(path)
+    with open(out_path, 'wb') as wb:
+        wb.write(binary)
+    del binary
+
+
+def do_the_thing_dx10_to_dx9(path):
+    out_folder = Path(str(folder) + '_dx9')
+    out_path = Path.joinpath(out_folder, Path(*path.parts[1:]).with_suffix('.dds'))
+    out_path.parent.mkdir(exist_ok=True, parents=True)
+    binary = dx10_to_dx9.get_dds_binary(path)
     with open(out_path, 'wb') as wb:
         wb.write(binary)
     del binary

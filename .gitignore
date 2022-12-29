@@ -1,3 +1,7 @@
 images/
 output/
 __pycache__
+/dds_tex/
+/dds/
+/tex/
+/tex_dds/

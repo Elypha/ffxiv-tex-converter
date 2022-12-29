@@ -114,5 +114,5 @@ class Tex(KaitaiStruct):
             self.data = []
             i = 0
             while not self._io.is_eof():
-                self.data.append(self._io.read_bytes(4))
+                self.data.append(self._io.read_bytes(1))
                 i += 1

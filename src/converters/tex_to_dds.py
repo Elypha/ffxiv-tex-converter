@@ -1,12 +1,7 @@
 import gc
-import os
-import time
-from multiprocessing import Pool
-from pathlib import Path
 from struct import pack
 
 import numpy
-from tqdm import tqdm
 
 from src.parsers.dds import Dds
 from src.parsers.tex import Tex
@@ -38,6 +33,8 @@ def get_dds_fourcc(tex):
         return ddspf_pf.dx10
     if format == tex_tf.b8g8r8a8:
         return ddspf_pf.none
+    if format == tex_tf.a8:
+        return ddspf_pf.dx10
 
 
 def get_dds_dxt10_header(tex):
@@ -57,6 +54,8 @@ def get_dds_dxt10_dxgi_format(tex_format):
     # todo could also be rolled into the fourcc
     if tex_format == tex_tf.bc7:
         return dxgi_format.dxgi_format_bc7_unorm
+    if tex_format == tex_tf.a8:
+        return dxgi_format.dxgi_format_a8_unorm
 
 
 def get_dds_dxt10_resource_dimension():
@@ -116,6 +115,7 @@ def get_ddspf_header(fourcc):
 
         # no error catching I want this to break if it's fucked up.
     ddspf_header = pack('<IIIIIIII', size, flags, fourcc.value, rgbBitCount, rBitMask, gBitMask, bBitmask, aBitmask)
+        
     return ddspf_header
 
 
@@ -145,7 +145,6 @@ def get_dds_binary(path):
     fourcc = get_dds_fourcc(tex_binary)
     mipmapCount = get_dds_mipmapCount(tex_binary)
     ddspf_pf = Dds.DdsPixelformat.PixelFormats
-
     # here comes the structure
     magic = b'DDS '
     size = 124
@@ -163,9 +162,12 @@ def get_dds_binary(path):
     caps3 = 0
     caps4 = 0
     reserved2 = 0
-    header = magic + pack('<IIIIIII', size, flags, height, width, pitch, depth, mipmapCount) + \
+    try:
+        header = magic + pack('<IIIIIII', size, flags, height, width, pitch, depth, mipmapCount) + \
              reserved1_array.tobytes() + ddspf_header + pack('<IIIII', caps1, caps2, caps3, caps4, reserved2)
     # if we are dxt10, write dxt10 header
+    except AttributeError:    
+        return AttributeError
     if fourcc == ddspf_pf.dx10:
         dds_dxt10_header = get_dds_dxt10_header(tex_binary)
         header += dds_dxt10_header

@@ -40,10 +40,14 @@ def do_the_thing_tex_to_dds(path):
     out_folder = Path(str(folder) + '_dds')
     out_path = Path.joinpath(out_folder, Path(*path.parts[1:]).with_suffix('.dds'))
     out_path.parent.mkdir(exist_ok=True, parents=True)
-    binary = tex_to_dds.get_dds_binary(path)
-    with open(out_path, 'wb') as wb:
-        wb.write(binary)
-    del binary
+    try:
+        binary = tex_to_dds.get_dds_binary(path)
+        with open(out_path, 'wb') as wb:
+            wb.write(binary)
+        del binary
+    except AttributeError:
+        print(path.name)
+        pass
 
 
 def do_the_thing_dx10_to_dx9(path):

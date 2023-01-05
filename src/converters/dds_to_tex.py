@@ -1,12 +1,8 @@
 import gc
-import os
-from multiprocessing import Pool
-from pathlib import Path
 from struct import pack
 
 import numpy
 from numpy import ushort
-from tqdm import tqdm
 
 from src.parsers.tex import Tex
 from src.parsers.dds import Dds
@@ -24,7 +20,12 @@ def get_tex_mipmap_length_format(dds):
     if fourcc == Dds.DdsPixelformat.PixelFormats.dxt3 or fourcc == Dds.DdsPixelformat.PixelFormats.dxt5:
         return int(height * width * 2)
     if fourcc == Dds.DdsPixelformat.PixelFormats.none:
-        return int(height * width * 4)
+        if dds.hdr.ddspf.r_bit_mask == b'\x00\x00\xff\x00':
+
+            return int(height * width * 4)
+        else:
+            # support for A8
+            return int(height * width)
     if fourcc == Dds.DdsPixelformat.PixelFormats.dx10:
         if dds.hdr_dxt10.dxgi_format == Dds.HeaderDxt10.DxgiFormats.dxgi_format_bc7_unorm \
                 or dds.hdr_dxt10.dxgi_format == Dds.HeaderDxt10.DxgiFormats.dxgi_format_bc3_unorm \
@@ -75,7 +76,6 @@ def get_tex_attribute():
 
 def get_tex_format(dds):
     fourcc = dds.hdr.ddspf.fourcc
-    dxgi_format = dds.hdr_dxt10.dxgi_format
     dds_dxgi = Dds.HeaderDxt10.DxgiFormats
     tex_tf = Tex.Header.TextureFormat
     ddspf_pf = Dds.DdsPixelformat.PixelFormats
@@ -86,6 +86,7 @@ def get_tex_format(dds):
     if fourcc == ddspf_pf.dxt5:
         return tex_tf.dxt5.value
     if fourcc == ddspf_pf.dx10:
+        dxgi_format = dds.hdr_dxt10.dxgi_format
         if dxgi_format == dds_dxgi.dxgi_format_bc7_unorm:
             return tex_tf.bc7.value
         if dxgi_format == dds_dxgi.dxgi_format_bc3_unorm:
@@ -97,7 +98,10 @@ def get_tex_format(dds):
         if dxgi_format == dds_dxgi.dxgi_format_b8g8r8a8_unorm:
             return tex_tf.b8g8r8a8.value
     if fourcc == ddspf_pf.none:
-        return tex_tf.b8g8r8a8.value
+        if dds.hdr.ddspf.r_bit_mask == b'\x00\x00\xff\x00':
+            return tex_tf.b8g8r8a8.value
+        else:
+            return tex_tf.a8.value
 
 
 def get_tex_height(dds):

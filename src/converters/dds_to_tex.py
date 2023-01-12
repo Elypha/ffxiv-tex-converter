@@ -9,31 +9,39 @@ from src.parsers.dds import Dds
 
 lod_offset = numpy.array([0, 1, 2], dtype=numpy.int32)
 
+# if we have a Dds.* put it up here
+Dds_fourcc = Dds.DdsPixelformat.PixelFormats
+Dds_dxgi = Dds.HeaderDxt10.DxgiFormats
+
+# if we have a Tex.* put it here
+Tex_format = Tex.Header.TextureFormat
+
 
 def get_tex_mipmap_length_format(dds):
     height = dds.hdr.height
     width = dds.hdr.width
     fourcc = dds.hdr.ddspf.fourcc
+    dxgi = dds.hdr_dxt10.dxgi_format
     # potentially might put in BC4 and BC5 (ATI1, ATI2)
-    if fourcc == Dds.DdsPixelformat.PixelFormats.dxt1:
+    if fourcc == Dds_fourcc.dxt1:
         return int(height * width // 2)
-    if fourcc == Dds.DdsPixelformat.PixelFormats.dxt3 or fourcc == Dds.DdsPixelformat.PixelFormats.dxt5:
+    if fourcc == Dds_fourcc.dxt3 or fourcc == Dds_fourcc.dxt5:
         return int(height * width * 2)
-    if fourcc == Dds.DdsPixelformat.PixelFormats.none:
+    if fourcc == Dds_fourcc.none:
         if dds.hdr.ddspf.r_bit_mask == b'\x00\x00\xff\x00':
 
             return int(height * width * 4)
         else:
             # support for A8
             return int(height * width)
-    if fourcc == Dds.DdsPixelformat.PixelFormats.dx10:
-        if dds.hdr_dxt10.dxgi_format == Dds.HeaderDxt10.DxgiFormats.dxgi_format_bc7_unorm \
-                or dds.hdr_dxt10.dxgi_format == Dds.HeaderDxt10.DxgiFormats.dxgi_format_bc3_unorm \
-                or dds.hdr_dxt10.dxgi_format == Dds.HeaderDxt10.DxgiFormats.dxgi_format_bc2_unorm:
+    if fourcc == Dds_fourcc.dx10:
+        if dxgi == Dds_dxgi.dxgi_format_bc7_unorm \
+                or dxgi == Dds_dxgi.dxgi_format_bc3_unorm \
+                or dxgi == Dds_dxgi.dxgi_format_bc2_unorm:
             return int(height * width * 2)
-        if dds.hdr_dxt10.dxgi_format == Dds.HeaderDxt10.DxgiFormats.dxgi_format_bc1_unorm:
+        if dxgi == Dds_dxgi.dxgi_format_bc1_unorm:
             return int(height * width // 2)
-        if dds.hdr_dxt10.dxgi_format == Dds.HeaderDxt10.DxgiFormats.dxgi_format_b8g8r8a8_unorm:
+        if dxgi == Dds_dxgi.dxgi_format_b8g8r8a8_unorm:
             return int(height * width * 4)
     else:
         return None
@@ -76,32 +84,29 @@ def get_tex_attribute():
 
 def get_tex_format(dds):
     fourcc = dds.hdr.ddspf.fourcc
-    dds_dxgi = Dds.HeaderDxt10.DxgiFormats
-    tex_tf = Tex.Header.TextureFormat
-    ddspf_pf = Dds.DdsPixelformat.PixelFormats
-    if fourcc == ddspf_pf.dxt1:
-        return tex_tf.dxt1.value
-    if fourcc == ddspf_pf.dxt3:
-        return tex_tf.dxt3.value
-    if fourcc == ddspf_pf.dxt5:
-        return tex_tf.dxt5.value
-    if fourcc == ddspf_pf.dx10:
-        dxgi_format = dds.hdr_dxt10.dxgi_format
-        if dxgi_format == dds_dxgi.dxgi_format_bc7_unorm:
-            return tex_tf.bc7.value
-        if dxgi_format == dds_dxgi.dxgi_format_bc3_unorm:
-            return tex_tf.dxt5.value
-        if dxgi_format == dds_dxgi.dxgi_format_bc2_unorm:
-            return tex_tf.dxt3.value
-        if dxgi_format == dds_dxgi.dxgi_format_bc1_unorm:
-            return tex_tf.dxt1.value
-        if dxgi_format == dds_dxgi.dxgi_format_b8g8r8a8_unorm:
-            return tex_tf.b8g8r8a8.value
-    if fourcc == ddspf_pf.none:
+    dxgi = dds.hdr_dxt10.dds.hdr_dxt10
+    if fourcc == Dds_fourcc.dxt1:
+        return Tex_format.dxt1.value
+    if fourcc == Dds_fourcc.dxt3:
+        return Tex_format.dxt3.value
+    if fourcc == Dds_fourcc.dxt5:
+        return Tex_format.dxt5.value
+    if fourcc == Dds_fourcc.dx10:
+        if dxgi == Dds_dxgi.dxgi_format_bc7_unorm:
+            return Tex_format.bc7.value
+        if dxgi == Dds_dxgi.dxgi_format_bc3_unorm:
+            return Tex_format.dxt5.value
+        if dxgi == Dds_dxgi.dxgi_format_bc2_unorm:
+            return Tex_format.dxt3.value
+        if dxgi == Dds_dxgi.dxgi_format_bc1_unorm:
+            return Tex_format.dxt1.value
+        if dxgi == Dds_dxgi.dxgi_format_b8g8r8a8_unorm:
+            return Tex_format.b8g8r8a8.value
+    if fourcc == Dds_fourcc.none:
         if dds.hdr.ddspf.r_bit_mask == b'\x00\x00\xff\x00':
-            return tex_tf.b8g8r8a8.value
+            return Tex_format.b8g8r8a8.value
         else:
-            return tex_tf.a8.value
+            return Tex_format.a8.value
 
 
 def get_tex_height(dds):

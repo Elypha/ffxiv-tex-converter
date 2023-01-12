@@ -6,6 +6,16 @@ import numpy
 from src.parsers.dds import Dds
 from src.parsers.tex import Tex
 
+# if we have a Dds.* put it up here
+Dds_fourcc = Dds.DdsPixelformat.PixelFormats
+Dds_ddspf_ff = Dds.DdsPixelformat.FormatFlags
+Dds_ff = Dds.Header.FormatFlags
+Dds_dxgi = Dds.HeaderDxt10.DxgiFormats
+Dds_cf = Dds.Header.CapsFlags
+
+# if we have a Tex.* put it here
+Tex_format = Tex.Header.TextureFormat
+
 
 def get_dds_height(tex):
     return int(tex.hdr.height)
@@ -21,41 +31,38 @@ def get_dds_mipmapCount(tex):
 
 def get_dds_fourcc(tex):
     format = tex.hdr.format
-    tex_tf = Tex.Header.TextureFormat
-    ddspf_pf = Dds.DdsPixelformat.PixelFormats
-    if format == tex_tf.dxt1:
-        return ddspf_pf.dxt1
-    if format == tex_tf.dxt5:
-        return ddspf_pf.dxt5
-    if format == tex_tf.dxt3:
-        return ddspf_pf.dxt3
-    if format == tex_tf.bc7:
-        return ddspf_pf.dx10
-    if format == tex_tf.b8g8r8a8:
-        return ddspf_pf.none
-    if format == tex_tf.a8:
-        return ddspf_pf.dx10
+    if format == Tex_format.dxt1:
+        return Dds_fourcc.dxt1
+    if format == Tex_format.dxt5:
+        return Dds_fourcc.dxt5
+    if format == Tex_format.dxt3:
+        return Dds_fourcc.dxt3
+    if format == Tex_format.bc7:
+        return Dds_fourcc.dx10
+    if format == Tex_format.b8g8r8a8:
+        return Dds_fourcc.none
+    if format == Tex_format.a8:
+        return Dds_fourcc.dx10
 
 
 def get_dds_dxt10_header(tex):
-    dxgi_format = get_dds_dxt10_dxgi_format(tex.hdr.format)
+    dxgi = get_dds_dxt10_dxgi(tex.hdr.format)
     resource_dimension = get_dds_dxt10_resource_dimension()
     misc_flag = get_dds_dxt10_misc_flag()
     array_size = get_dds_dxt10_array_size()
     misc_flag2 = get_dds_dxt10_misc_flags2()
-    dxt10_header = pack('<IIIII', dxgi_format.value, resource_dimension, misc_flag, array_size, misc_flag2)
+    dxt10_header = pack('<IIIII', dxgi.value, resource_dimension, misc_flag, array_size, misc_flag2)
     return dxt10_header
 
 
-def get_dds_dxt10_dxgi_format(tex_format):
-    tex_tf = Tex.Header.TextureFormat
-    dxgi_format = Dds.HeaderDxt10.DxgiFormats
+def get_dds_dxt10_dxgi(tex_format):
     # todo theoretically should have support for more options but w/e
     # todo could also be rolled into the fourcc
-    if tex_format == tex_tf.bc7:
-        return dxgi_format.dxgi_format_bc7_unorm
-    if tex_format == tex_tf.a8:
-        return dxgi_format.dxgi_format_a8_unorm
+
+    if tex_format == Tex_format.bc7:
+        return Dds_dxgi.dxgi_format_bc7_unorm
+    if tex_format == Tex_format.a8:
+        return Dds_dxgi.dxgi_format_a8_unorm
 
 
 def get_dds_dxt10_resource_dimension():
@@ -79,34 +86,31 @@ def get_dds_dxt10_misc_flags2():
 
 def get_pitch(height, width, fourcc):
     # doc: https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dx-graphics-dds-pguide#dds-file-layout
-    ddspf_pf = Dds.DdsPixelformat.PixelFormats
-    if fourcc == ddspf_pf.none:
+    if fourcc == Dds_fourcc.none:
         bits_per_pixel = 32
         pitch = (width * bits_per_pixel + 7) / 8
     else:
-        if fourcc == ddspf_pf.dxt1:
+        if fourcc == Dds_fourcc.dxt1:
             block_size = 8
         else:
             block_size = 16
         # microsoft recommends width+3 and height+3, but I just set mine to match nvidia texture tools
-        pitch = max(1, ((width) / 4)) * max(1, ((height) / 4)) * block_size
+        pitch = max(1, (width / 4)) * max(1, (height / 4)) * block_size
     return int(pitch)
 
 
 def get_ddspf_header(fourcc):
-    ddspf_pf = Dds.DdsPixelformat.PixelFormats
-    ddspf_ff = Dds.DdsPixelformat.FormatFlags
     size = 32
-    if fourcc != ddspf_pf.none:
-        flags = ddspf_ff.ddpf_fourcc.value
+    if fourcc != Dds_fourcc.none:
+        flags = Dds_ddspf_ff.ddpf_fourcc.value
         rgbBitCount = 0
         rBitMask = 0
         gBitMask = 0
         bBitmask = 0
         aBitmask = 0
-    if fourcc == ddspf_pf.none:
+    if fourcc == Dds_fourcc.none:
         # basically just BGRA (B,G,R,A) w/ 8bit per channel, eg rbitmask = [0,0,255,0], could write as array but w/e.
-        flags = ddspf_ff.ddpf_alpha.value + ddspf_ff.ddpf_rgb.value
+        flags = Dds_ddspf_ff.ddpf_alpha.value + Dds_ddspf_ff.ddpf_rgb.value
         rgbBitCount = 32
         rBitMask = 16711680
         gBitMask = 65280
@@ -115,28 +119,26 @@ def get_ddspf_header(fourcc):
 
         # no error catching I want this to break if it's fucked up.
     ddspf_header = pack('<IIIIIIII', size, flags, fourcc.value, rgbBitCount, rBitMask, gBitMask, bBitmask, aBitmask)
-        
+
     return ddspf_header
 
 
 def get_dds_flags(fourcc, mipmapCount):
-    ff = Dds.Header.FormatFlags
-    ddspf_pf = Dds.DdsPixelformat.PixelFormats
-    flags = (ff.ddsd_caps.value + ff.ddsd_width.value + ff.ddsd_height.value + ff.ddsd_pixelformat)
-    if fourcc == ddspf_pf.none:
-        flags += ff.ddsd_pitch.value
+    flags = (Dds_ff.ddsd_caps.value + Dds_ff.ddsd_width.value + Dds_ff.ddsd_height.value + Dds_ff.ddsd_pixelformat)
+    if fourcc == Dds_fourcc.none:
+        flags += Dds_ff.ddsd_pitch.value
     else:
-        flags += ff.ddsd_linearsize.value
+        flags += Dds_ff.ddsd_linearsize.value
     if mipmapCount > 1:
-        flags += ff.ddsd_mipmapcount.value
+        flags += Dds_ff.ddsd_mipmapcount.value
     return flags
 
 
 def get_dds_caps1(tex):
-    cf = Dds.Header.CapsFlags
-    flags = cf.ddscaps_texture.value
+    # todo i don't remember how the flags+= works so go look at it again
+    flags = Dds_cf.ddscaps_texture.value
     if tex.hdr.mip_levels > 1:
-        flags += (cf.ddscaps_complex.value + cf.ddscaps_mipmap.value)
+        flags += (Dds_cf.ddscaps_complex.value + Dds_cf.ddscaps_mipmap.value)
     return flags
 
 
@@ -144,7 +146,6 @@ def get_dds_binary(path):
     tex_binary = Tex.from_file(path)
     fourcc = get_dds_fourcc(tex_binary)
     mipmapCount = get_dds_mipmapCount(tex_binary)
-    ddspf_pf = Dds.DdsPixelformat.PixelFormats
     # here comes the structure
     magic = b'DDS '
     size = 124
@@ -164,11 +165,11 @@ def get_dds_binary(path):
     reserved2 = 0
     try:
         header = magic + pack('<IIIIIII', size, flags, height, width, pitch, depth, mipmapCount) + \
-             reserved1_array.tobytes() + ddspf_header + pack('<IIIII', caps1, caps2, caps3, caps4, reserved2)
+                 reserved1_array.tobytes() + ddspf_header + pack('<IIIII', caps1, caps2, caps3, caps4, reserved2)
     # if we are dxt10, write dxt10 header
-    except AttributeError:    
+    except AttributeError:
         return AttributeError
-    if fourcc == ddspf_pf.dx10:
+    if fourcc == Dds_fourcc.dx10:
         dds_dxt10_header = get_dds_dxt10_header(tex_binary)
         header += dds_dxt10_header
 

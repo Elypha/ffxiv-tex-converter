@@ -84,7 +84,7 @@ def get_tex_attribute():
 
 def get_tex_format(dds):
     fourcc = dds.hdr.ddspf.fourcc
-    dxgi = dds.hdr_dxt10.dds.hdr_dxt10
+    dxgi = dds.hdr_dxt10.dxgi_format
     if fourcc == Dds_fourcc.dxt1:
         return Tex_format.dxt1.value
     if fourcc == Dds_fourcc.dxt3:

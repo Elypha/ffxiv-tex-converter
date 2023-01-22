@@ -21,7 +21,7 @@ def get_tex_mipmap_length_format(dds):
     height = dds.hdr.height
     width = dds.hdr.width
     fourcc = dds.hdr.ddspf.fourcc
-    dxgi = dds.hdr_dxt10.dxgi_format
+
     # potentially might put in BC4 and BC5 (ATI1, ATI2)
     if fourcc == Dds_fourcc.dxt1:
         return int(height * width // 2)
@@ -29,12 +29,12 @@ def get_tex_mipmap_length_format(dds):
         return int(height * width * 2)
     if fourcc == Dds_fourcc.none:
         if dds.hdr.ddspf.r_bit_mask == b'\x00\x00\xff\x00':
-
             return int(height * width * 4)
         else:
-            # support for A8
+            # support for A8 and L8 (r8)
             return int(height * width)
     if fourcc == Dds_fourcc.dx10:
+        dxgi = dds.hdr_dxt10.dxgi_format
         if dxgi == Dds_dxgi.dxgi_format_bc7_unorm \
                 or dxgi == Dds_dxgi.dxgi_format_bc3_unorm \
                 or dxgi == Dds_dxgi.dxgi_format_bc2_unorm:
@@ -43,6 +43,8 @@ def get_tex_mipmap_length_format(dds):
             return int(height * width // 2)
         if dxgi == Dds_dxgi.dxgi_format_b8g8r8a8_unorm:
             return int(height * width * 4)
+        if dxgi == Dds_dxgi.dxgi_format_r8_unorm:
+            return int(height * width)
     else:
         return None
 
@@ -84,7 +86,6 @@ def get_tex_attribute():
 
 def get_tex_format(dds):
     fourcc = dds.hdr.ddspf.fourcc
-    dxgi = dds.hdr_dxt10.dxgi_format
     if fourcc == Dds_fourcc.dxt1:
         return Tex_format.dxt1.value
     if fourcc == Dds_fourcc.dxt3:
@@ -92,6 +93,7 @@ def get_tex_format(dds):
     if fourcc == Dds_fourcc.dxt5:
         return Tex_format.dxt5.value
     if fourcc == Dds_fourcc.dx10:
+        dxgi = dds.hdr_dxt10.dxgi_format
         if dxgi == Dds_dxgi.dxgi_format_bc7_unorm:
             return Tex_format.bc7.value
         if dxgi == Dds_dxgi.dxgi_format_bc3_unorm:
@@ -102,10 +104,15 @@ def get_tex_format(dds):
             return Tex_format.dxt1.value
         if dxgi == Dds_dxgi.dxgi_format_b8g8r8a8_unorm:
             return Tex_format.b8g8r8a8.value
+        if dxgi == Dds_dxgi.dxgi_format_r8_unorm:
+            return Tex_format.l8
     if fourcc == Dds_fourcc.none:
         if dds.hdr.ddspf.r_bit_mask == b'\x00\x00\xff\x00':
+            # basically asking if format is in *.*.R.*, which would be BGRA or BGR
             return Tex_format.b8g8r8a8.value
-        else:
+        if dds.hdr.ddspf.r_bit_mask == b'\xff\x00\x00\x00':
+            return Tex_format.l8.value
+        elif dds.hdr.ddspf.a_bit_mask == b'\xff\x00\x00\x00':
             return Tex_format.a8.value
 
 

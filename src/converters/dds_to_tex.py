@@ -37,7 +37,8 @@ def get_tex_mipmap_length_format(dds):
         dxgi = dds.hdr_dxt10.dxgi_format
         if dxgi == Dds_dxgi.dxgi_format_bc7_unorm \
                 or dxgi == Dds_dxgi.dxgi_format_bc3_unorm \
-                or dxgi == Dds_dxgi.dxgi_format_bc2_unorm:
+                or dxgi == Dds_dxgi.dxgi_format_bc2_unorm \
+                or dxgi == Dds_dxgi.dxgi_format_b4g4r4a4_unorm:
             return int(height * width * 2)
         if dxgi == Dds_dxgi.dxgi_format_bc1_unorm:
             return int(height * width // 2)
@@ -106,14 +107,18 @@ def get_tex_format(dds):
             return Tex_format.b8g8r8a8.value
         if dxgi == Dds_dxgi.dxgi_format_r8_unorm:
             return Tex_format.l8
+        if dxgi == Dds_dxgi.dxgi_format_a8_unorm:
+            return Tex_format.a8
     if fourcc == Dds_fourcc.none:
         if dds.hdr.ddspf.r_bit_mask == b'\x00\x00\xff\x00':
             # basically asking if format is in *.*.R.*, which would be BGRA or BGR
             return Tex_format.b8g8r8a8.value
-        if dds.hdr.ddspf.r_bit_mask == b'\xff\x00\x00\x00':
+        elif dds.hdr.ddspf.r_bit_mask == b'\xff\x00\x00\x00':
             return Tex_format.l8.value
         elif dds.hdr.ddspf.a_bit_mask == b'\xff\x00\x00\x00':
             return Tex_format.a8.value
+        elif dds.hdr.ddspf.rgb_bit_count == 16:
+            return Tex_format.b4g4r4a4
 
 
 def get_tex_height(dds):

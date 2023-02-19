@@ -48,6 +48,8 @@ def get_dds_fourcc(format):
         return Dds_fourcc.none
     if format == Tex_format.l8:
         return Dds_fourcc.none
+    if format == Tex_format.b4g4r4a4:
+        return Dds_fourcc.none
 
 
 def get_dds_dxt10_header(tex):
@@ -70,6 +72,8 @@ def get_dds_dxt10_dxgi(tex_format):
         return Dds_dxgi.dxgi_format_a8_unorm
     if tex_format == Tex_format.l8:
         return Dds_dxgi.dxgi_format_r8_unorm
+    if tex_format == Tex_format.b4g4r4a4:
+        return Dds_dxgi.dxgi_format_b4g4r4a4_unorm
 
 
 def get_dds_dxt10_resource_dimension():
@@ -97,18 +101,24 @@ def get_pitch(tex):
     width = get_dds_width(tex)
     # these don't seem to break for L8 or A8 so :shrug:
     # doc: https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dx-graphics-dds-pguide#dds-file-layout
-    if format == Tex_format.b8g8r8a8:
+    if format == Tex_format.b8g8r8a8 or format == Tex_format.b8g8r8x8:
         bits_per_pixel = 32
         pitch = (width * bits_per_pixel + 7) / 8
+    elif format == Tex_format.b4g4r4a4:
+        bits_per_pixel = 16
+        pitch = (width * bits_per_pixel + 3) / 8
     elif format == Tex_format.a8 or format == Tex_format.l8:
         bits_per_pixel = 8
         pitch = (width * bits_per_pixel + 7) / 8
     else:
         if format == Tex_format.dxt1:
             block_size = 8
-        if format == Tex_format.bc7 or format == Tex_format.dxt5:
+        elif format == Tex_format.bc7 or format == Tex_format.dxt5 or format == Tex_format.dxt3:
             block_size = 16
         # microsoft recommends width+3 and height+3, but I just set mine to match nvidia texture tools
+        else:
+            print(format)
+        # needs to break if no block_size.
         pitch = max(1, (width / 4)) * max(1, (height / 4)) * block_size
     return int(pitch)
 
@@ -135,6 +145,13 @@ def get_ddspf_header(format, fourcc):
         flags = Dds_ddspf_ff.ddpf_luminance.value
         rgbBitCount = 32
         rBitMask = 255
+        gBitMask = 0
+        bBitmask = 0
+        aBitmask = 0
+    elif format == Tex_format.b4g4r4a4:
+        flags = Dds_ddspf_ff.ddpf_alphapixels.value + Dds_ddspf_ff.ddpf_rgb.value
+        rgbBitCount = 16
+        rBitMask = 0
         gBitMask = 0
         bBitmask = 0
         aBitmask = 0

@@ -20,7 +20,7 @@ options:
                         if using multicore processing, job multiplier per core. default = 5
 ```
 * Accepts nested directory structures.
-* Supports BGRA, BGRX, BC1 (DXT1), BC2 (DXT3), BC3 (DXT5), and BC7. 
+* Supports BGRA, BGRX, BC1 (DXT1), BC2 (DXT3), BC3 (DXT5), and BC7, A8, L8, BGRA4. 
 
 ### Usage examples:
 
@@ -48,7 +48,11 @@ It will output to **"cat_dds"** directory.
 ### When should I use TexTools Texture Importer?
 * If mipmaps don't bother you, go ahead.
 * If you want to write directly to the game files. Please don't.
-* If you are working on a file, and you want to immediately see results.
+* If you are working on a file, and you want to immediately see results USE PENUMBRA IMPORT.
+
+### Penumbra Import
+* Penumbra also has a BC7/BC3/BGRA8 import
+* Use this if you don't need to batch convert or use an esoteric file type.
 
 I personally still use TexTools for a lot of stuff. Please don't perpetuate cultish behavior around mod tools. It's weird.
 

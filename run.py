@@ -10,7 +10,7 @@ parser.add_argument('--command', '-c', metavar='-C', type=str, help='dds-to-tex,
 
 parser.add_argument('--parallel', '-p', metavar='-P', action=argparse.BooleanOptionalAction,
                     help='multicore processing')
-parser.add_argument('--multiplier', '-m', metavar='-M', type=int, default=5,
+parser.add_argument('--multiplier', '-m', metavar='-M', type=float, default=5,
                     help='if using multicore processing, job multiplier per core. default = 5')
 args = parser.parse_args()
 

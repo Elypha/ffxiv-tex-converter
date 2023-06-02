@@ -34,9 +34,9 @@ It will output to **"dog_tex"** directory.
 
 **given directory "cat" has FFXIV tex files I want to convert to DDS files.**
 
-Run this command: `python run.py -d cat -c tex_to_dds`
+Run this command: `python run.py -d cat -c tex-to-dds`
 
-I want to run it faster: `python run.py -d cat -c tex_to_dds -p -m 10`
+I want to run it faster: `python run.py -d cat -c tex-to-dds -p -m 10`
 
 It will output to **"cat_dds"** directory.
 

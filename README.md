@@ -20,7 +20,7 @@ options:
                         if using multicore processing, job multiplier per core. default = 5
 ```
 * Accepts nested directory structures.
-* Supports BGRA, BGRX, BC1 (DXT1), BC2 (DXT3), BC3 (DXT5), and BC7, A8, L8, BGRA4. 
+* Supports BGRA, BGRX, BC1 (DXT1), BC2 (DXT3), BC3 (DXT5), and BC7, A8, L8, BGRA4, BC5 (ATI2). 
 
 ### Usage examples:
 

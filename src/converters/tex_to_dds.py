@@ -40,6 +40,8 @@ def get_dds_fourcc(format):
         return Dds_fourcc.dxt5
     if format == Tex_format.dxt3:
         return Dds_fourcc.dxt3
+    if format == Tex_format.ati2:
+        return Dds_fourcc.dx10
     if format == Tex_format.bc7:
         return Dds_fourcc.dx10
     if format == Tex_format.b8g8r8a8:
@@ -65,7 +67,8 @@ def get_dds_dxt10_header(tex):
 def get_dds_dxt10_dxgi(tex_format):
     # todo theoretically should have support for more options but w/e
     # todo could also be rolled into the fourcc
-
+    if tex_format == Tex_format.ati2:
+        return Dds_dxgi.dxgi_format_bc5_unorm
     if tex_format == Tex_format.bc7:
         return Dds_dxgi.dxgi_format_bc7_unorm
     if tex_format == Tex_format.a8:
@@ -113,7 +116,7 @@ def get_pitch(tex):
     else:
         if format == Tex_format.dxt1:
             block_size = 8
-        elif format == Tex_format.bc7 or format == Tex_format.dxt5 or format == Tex_format.dxt3:
+        elif format == Tex_format.bc7 or format == Tex_format.dxt5 or format == Tex_format.dxt3 or format == Tex_format.ati2:
             block_size = 16
         # microsoft recommends width+3 and height+3, but I just set mine to match nvidia texture tools
         else:

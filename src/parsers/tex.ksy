@@ -26,7 +26,7 @@ types:
       - id: mip_levels
         type: u2
       - id: lod_offset3
-        doc: 'is always u4[1]=0, u4[2]=1, u4[3]=2'
+        doc: 'is always u4[1]=0, u4[2]=1, u4[3]=2; this '
         # could probably write some verification here, but w/e
         type: u4
         repeat: expr
@@ -95,7 +95,9 @@ types:
             0x3420: dxt1
             0x3430: dxt3
             0x3431: dxt5
+            0x6120: ati1
             0x6230: ati2
+            
             
             0x6432: bc7
             
@@ -110,5 +112,5 @@ types:
   body:
     seq:
     - id: data
-      size: 4
+      size: 1
       repeat: eos

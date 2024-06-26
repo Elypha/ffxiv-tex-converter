@@ -78,6 +78,7 @@ class Tex(KaitaiStruct):
             null1 = 20736
             shadow16 = 20800
             shadow24 = 20816
+            ati1= 24864
             ati2 = 25136
             bc7 = 25650
             type_mask = 61440

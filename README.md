@@ -20,7 +20,7 @@ options:
                         if using multicore processing, job multiplier per core. default = 5
 ```
 * Accepts nested directory structures.
-* Supports BGRA, BGRX, BC1 (DXT1), BC2 (DXT3), BC3 (DXT5), and BC7, A8, L8, BGRA4, BC5 (ATI2). 
+* Supports BGRA, BGRX, BC1 (DXT1), BC2 (DXT3), BC3 (DXT5), and BC7, A8, L8, BGRA4, BC5 (ATI2), BC4 (ATI1). 
 
 ### Usage examples:
 
@@ -53,9 +53,6 @@ It will output to **"cat_dds"** directory.
 ### Penumbra Import
 * Penumbra also has a BC7/BC3/BGRA8 import
 * Use this if you don't need to batch convert or use an esoteric file type.
-
-I personally still use TexTools for a lot of stuff. Please don't perpetuate cultish behavior around mod tools. It's weird.
-
 
 
 # parsers

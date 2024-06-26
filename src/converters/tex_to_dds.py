@@ -40,7 +40,7 @@ def get_dds_fourcc(format):
         return Dds_fourcc.dxt5
     if format == Tex_format.dxt3:
         return Dds_fourcc.dxt3
-    if format == Tex_format.at1:
+    if format == Tex_format.ati1:
         return Dds_fourcc.dx10
     if format == Tex_format.ati2:
         return Dds_fourcc.dx10

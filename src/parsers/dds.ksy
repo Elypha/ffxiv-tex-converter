@@ -107,6 +107,7 @@ types:
         0x33545844: dxt3
         0x35545844: dxt5
         0x30315844: dx10
+        0x55354342: bc5u
       format_flags:
         0x000001: ddpf_alphapixels
         0x000002: ddpf_alpha

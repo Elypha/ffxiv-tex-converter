@@ -88,6 +88,7 @@ class Dds(KaitaiStruct):
             dxt1 = 827611204
             dxt3 = 861165636
             dxt5 = 894720068
+            bc5u = 1429553986
 
         class FormatFlags(Enum):
             ddpf_alphapixels = 1

@@ -25,7 +25,7 @@ def get_tex_mipmap_length_format(dds):
     # potentially might put in BC4 and BC5 (ATI1, ATI2)
     if fourcc == Dds_fourcc.dxt1:
         return int(height * width // 2)
-    if fourcc == Dds_fourcc.dxt3 or fourcc == Dds_fourcc.dxt5:
+    if fourcc == Dds_fourcc.dxt3 or fourcc == Dds_fourcc.dxt5 or fourcc == Dds_fourcc.bc5u:
         return int(height * width * 2)
     if fourcc == Dds_fourcc.none:
         if dds.hdr.ddspf.r_bit_mask == b'\x00\x00\xff\x00':
@@ -38,7 +38,9 @@ def get_tex_mipmap_length_format(dds):
         if dxgi == Dds_dxgi.dxgi_format_bc7_unorm \
                 or dxgi == Dds_dxgi.dxgi_format_bc3_unorm \
                 or dxgi == Dds_dxgi.dxgi_format_bc2_unorm \
-                or dxgi == Dds_dxgi.dxgi_format_b4g4r4a4_unorm:
+                or dxgi == Dds_dxgi.dxgi_format_b4g4r4a4_unorm \
+                or dxgi == Dds_dxgi.dxgi_format_bc5_unorm \
+                or dxgi == Dds_dxgi.dxgi_format_bc4_unorm:
             return int(height * width * 2)
         if dxgi == Dds_dxgi.dxgi_format_bc1_unorm:
             return int(height * width // 2)
@@ -93,6 +95,8 @@ def get_tex_format(dds):
         return Tex_format.dxt3.value
     if fourcc == Dds_fourcc.dxt5:
         return Tex_format.dxt5.value
+    if fourcc == Dds_fourcc.bc5u:
+        return Tex_format.ati2.value
     if fourcc == Dds_fourcc.dx10:
         dxgi = dds.hdr_dxt10.dxgi_format
         if dxgi == Dds_dxgi.dxgi_format_bc7_unorm:
@@ -109,6 +113,10 @@ def get_tex_format(dds):
             return Tex_format.l8
         if dxgi == Dds_dxgi.dxgi_format_a8_unorm:
             return Tex_format.a8
+        if dxgi == Dds_dxgi.dxgi_format_bc5_unorm:
+            return Tex_format.ati2
+        if dxgi == Dds_dxgi.dxgi_format_bc4_unorm:
+            return Tex_format.ati1
     if fourcc == Dds_fourcc.none:
         if dds.hdr.ddspf.r_bit_mask == b'\x00\x00\xff\x00':
             # basically asking if format is in *.*.R.*, which would be BGRA or BGR

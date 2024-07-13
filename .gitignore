@@ -5,4 +5,12 @@ __pycache__
 /dds/
 /tex/
 /tex_dds/
-.7z
+*.7z
+materials_mipmap_output/
+materials_output/
+materials_input/
+*.dds
+*.tex
+*.tga
+*.png
+*.mtrl

@@ -1,8 +1,7 @@
-import gc
+import io
 from struct import pack
-
+from kaitaistruct import KaitaiStream
 import numpy
-
 from src.parsers.dds import Dds
 from src.parsers.tex import Tex
 
@@ -62,7 +61,8 @@ def get_dds_dxt10_header(tex):
     misc_flag = get_dds_dxt10_misc_flag()
     array_size = get_dds_dxt10_array_size()
     misc_flag2 = get_dds_dxt10_misc_flags2()
-    dxt10_header = pack('<IIIII', dxgi.value, resource_dimension, misc_flag, array_size, misc_flag2)
+    dxt10_header = pack('<IIIII', dxgi.value, resource_dimension,
+                        misc_flag, array_size, misc_flag2)
     return dxt10_header
 
 
@@ -171,13 +171,15 @@ def get_ddspf_header(format, fourcc):
         aBitmask = 0
 
         # no error catching I want this to break if it's fucked up.
-    ddspf_header = pack('<IIIIIIII', size, flags, fourcc.value, rgbBitCount, rBitMask, gBitMask, bBitmask, aBitmask)
+    ddspf_header = pack('<IIIIIIII', size, flags, fourcc.value,
+                        rgbBitCount, rBitMask, gBitMask, bBitmask, aBitmask)
 
     return ddspf_header
 
 
 def get_dds_flags(format, mipmapCount):
-    flags = (Dds_ff.ddsd_caps.value + Dds_ff.ddsd_width.value + Dds_ff.ddsd_height.value + Dds_ff.ddsd_pixelformat)
+    flags = (Dds_ff.ddsd_caps.value + Dds_ff.ddsd_width.value +
+             Dds_ff.ddsd_height.value + Dds_ff.ddsd_pixelformat)
     if format == Tex_format.a8 or Tex_format.l8 or Tex_format.b8g8r8a8:
         flags += Dds_ff.ddsd_pitch.value
     else:
@@ -196,41 +198,40 @@ def get_dds_caps1(tex):
 
 
 def get_dds_binary(path):
-    tex_binary = Tex.from_file(path)
-    format = get_tex_format(tex_binary)
-    fourcc = get_dds_fourcc(format)
-    mipmapCount = get_dds_mipmapCount(tex_binary)
-    # here comes the structure
+    with open(path, 'rb') as file:
+        tex_data = file.read()
+
+    tex_io = KaitaiStream(io.BytesIO(tex_data))
+    tex_binary = Tex(tex_io)
+
     magic = b'DDS '
     size = 124
-    flags = get_dds_flags(format, mipmapCount)
+    flags = get_dds_flags(tex_binary.hdr.format, tex_binary.hdr.mip_levels)
     height = get_dds_height(tex_binary)
     width = get_dds_width(tex_binary)
     pitch = get_pitch(tex_binary)
-    # mipmapCount goes here
     depth = 1
+    mipmapCount = get_dds_mipmapCount(tex_binary)
     reserved1_array = numpy.zeros(11, dtype=numpy.int32)
-    # reserved1_array = b'\x00' * 44
-    ddspf_header = get_ddspf_header(format, fourcc)
+    ddspf_header = get_ddspf_header(
+        tex_binary.hdr.format, get_dds_fourcc(tex_binary.hdr.format))
     caps1 = get_dds_caps1(tex_binary)
     caps2 = 0
     caps3 = 0
     caps4 = 0
     reserved2 = 0
-    try:
-        header = magic + pack('<IIIIIII', size, flags, height, width, pitch, depth, mipmapCount) + \
-                 reserved1_array.tobytes() + ddspf_header + pack('<IIIII', caps1, caps2, caps3, caps4, reserved2)
-    # if we are dxt10, write dxt10 header
-    except AttributeError:
-        return AttributeError
-    if fourcc == Dds_fourcc.dx10:
-        dds_dxt10_header = get_dds_dxt10_header(tex_binary)
-        header += dds_dxt10_header
 
-    body = (b''.join(tex_binary.bdy.data))
-    dds_binary = header + body
+    header = magic + pack('<IIIIIII', size, flags, height, width, pitch, depth, mipmapCount) + \
+        reserved1_array.tobytes() + ddspf_header + pack('<IIIII',
+                                                        caps1, caps2, caps3, caps4, reserved2)
 
-    del tex_binary
-    gc.collect()
+    if get_dds_fourcc(tex_binary.hdr.format) == Dds_fourcc.dx10:
+        header += get_dds_dxt10_header(tex_binary)
 
-    return dds_binary
+    return header + tex_binary.bdy.data
+
+
+def write_dds_file(input_path, output_path):
+    dds_binary = get_dds_binary(input_path)
+    with open(output_path, 'wb') as file:
+        file.write(dds_binary)

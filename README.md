@@ -5,7 +5,7 @@
     pip install tqdm
 
 ---
-## run.py
+## ffxiv_tex_converter.py
 ```
 ffxiv-tex-converter, FFXIV TEX FILE CONVERTER
 
@@ -14,45 +14,48 @@ options:
   --directory -D, -d -D
                         Initial directory to be processed.
   --command -C, -c -C   dds-to-tex, tex-to-dds
-  --parallel, --no-parallel, -p
-                        multicore processing
-  --multiplier -M, -m -M
-                        if using multicore processing, job multiplier per core. default = 5
+  -p, --parallel        Enable multicore processing
+  --chunk-size -CS, -cs -CS
+                        Target chunk size in MB for parallel processing. default = 100
 ```
 * Accepts nested directory structures.
-* Supports BGRA, BGRX, BC1 (DXT1), BC2 (DXT3), BC3 (DXT5), and BC7, A8, L8, BGRA4, BC5 (ATI2), BC4 (ATI1). 
+* Supports Compressed Types:
+   * BC1 (DXT1), BC2 (DXT3), BC3 (DXT5), BC4 (ATI1), BC5 (ATI2), BC7, BGRA4 (limited).
 
+* Supports Uncompressed Types:
+  * L8, A8, BGRA, BGRX
+* Further support can be added on as need arises. If you need a specific format, open an issue.
 ### Usage examples:
 
 **given directory "dog" has dds files I want to convert to FFXIV tex files.**
 
-Run this command: `python run.py -d dog -c dds-to-tex`
+Run this command: `python ffxiv_tex_converter.py -d dog -c dds-to-tex`
 
-I want to run it faster: `python run.py -d dog -c dds-to-tex -p -m 10`
+I want to run it faster: `python ffxiv_tex_converter.py -d dog -c dds-to-tex -p --chunk-size 200`
 
 It will output to **"dog_tex"** directory.
 
 **given directory "cat" has FFXIV tex files I want to convert to DDS files.**
 
-Run this command: `python run.py -d cat -c tex-to-dds`
+Run this command: `python ffxiv_tex_converter.py -d cat -c tex-to-dds`
 
-I want to run it faster: `python run.py -d cat -c tex-to-dds -p -m 10`
+I want to run it faster: `python ffxiv_tex_converter.py -d cat -c tex-to-dds -p --chunk-size 200`
 
 It will output to **"cat_dds"** directory.
 
-### Why should I use this over TexTools?
-* TexTools breaks mipmaps. Either by falsely calculating the offset, or just erasing the end of the file.
-* TexTools doesn't support writing many files at once.
-* Textools can't interact with most game textures. TexTools only interacts with character and housing textures.
+### What is this for?
+* You want specific fine-grained control of the DDS you are feeding FFXIV.
+* You want to convert many DDS or TEX files at once.
 
-### When should I use TexTools Texture Importer?
-* If mipmaps don't bother you, go ahead.
-* If you want to write directly to the game files. Please don't.
-* If you are working on a file, and you want to immediately see results USE PENUMBRA IMPORT.
+### How do I finely control my DDS?
+* [Use Microsoft Textools](https://github.com/Microsoft/DirectXTex/wiki/Texconv) (Recommended)
+* [Use Cuttlefish](https://github.com/akb825/Cuttlefish)
+* Use Nvidia Texture Tools
+* Use Intel Texture Tools
 
-### Penumbra Import
-* Penumbra also has a BC7/BC3/BGRA8 import
-* Use this if you don't need to batch convert or use an esoteric file type.
+### Alternatives
+* Penumbra import
+* FFXIV TexTools import
 
 
 # parsers
@@ -62,17 +65,20 @@ It will output to **"cat_dds"** directory.
 * kaitai struct to read dds header, body. body reading is only rudimentary to reach EOF.
 * Read [Microsoft DDS_Header Docs](https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dds-header) for more info.
 
-### dds.py
-
-* kaitai generated parser of dds for python. I did have to modify some Enum to be IntFlag instead, as the compiler did
-  not do that for me. Just an FYI if you re-compile the dds.ksy for python you might have to redo that.
-* Read [Microsoft DDS_Header Docs](https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dds-header) for more info.
 
 ### tex.ksy
 
 * kaitai struct to read tex header, body. body reading is only rudimentary to reach EOF.
 * See Penumbra/TexTools/Lumina source code for more info.
 
-### tex.py
 
-*same as the dds.py info really.
+### mtrl.ksy
+
+* Reads ffxiv material files in a rudimentary manner.
+
+
+# extra
+
+### ffxiv_mtrl_find_mipmap_load_bias.py
+
+* An example of using the mtrl.py (generated from the mtrl.ksy) to modify many FFXIV mtrl files' values in batch. This specifically corrects an issue with the mipmap load bias being too high on hairs.

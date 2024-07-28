@@ -112,8 +112,4 @@ class Tex(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.data = []
-            i = 0
-            while not self._io.is_eof():
-                self.data.append(self._io.read_bytes(1))
-                i += 1
+            self.data = self._io.read_bytes_full()

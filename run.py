@@ -1,13 +1,14 @@
 import argparse
 from pathlib import Path
 from src.packageland import handler
-from src.converters import dds_to_tex, tex_to_dds, dx10_to_dx9
+from src.converters import dds_to_tex, tex_to_dds
 
-parser = argparse.ArgumentParser(description="ffxiv-tex-converter, FFXIV TEX FILE CONVERTER")
+parser = argparse.ArgumentParser(
+    description="ffxiv-tex-converter, FFXIV TEX FILE CONVERTER")
 parser.add_argument('--directory', '-d', metavar='-D', type=str, help='Initial directory to be processed.',
                     required=True)
-parser.add_argument('--command', '-c', metavar='-C', type=str, help='dds-to-tex, tex-to-dds', required=True)
-
+parser.add_argument('--command', '-c', metavar='-C', type=str,
+                    help='dds-to-tex, tex-to-dds', required=True)
 parser.add_argument('--parallel', '-p', metavar='-P', action=argparse.BooleanOptionalAction,
                     help='multicore processing')
 parser.add_argument('--multiplier', '-m', metavar='-M', type=float, default=5,
@@ -22,42 +23,25 @@ def read_command(command):
         return do_the_thing_dds_to_tex
     if 'tex-to-dds' == command.lower():
         return do_the_thing_tex_to_dds
-    if 'dx10-to-dx9' == command.lower():
-        return do_the_thing_dx10_to_dx9
 
 
 def do_the_thing_dds_to_tex(path):
     out_folder = Path(str(folder) + '_tex')
-    out_path = Path.joinpath(out_folder, Path(*path.parts[1:]).with_suffix('.tex'))
+    out_path = Path.joinpath(out_folder, Path(
+        *path.parts[1:]).with_suffix('.tex'))
     out_path.parent.mkdir(exist_ok=True, parents=True)
-    binary = dds_to_tex.get_tex_binary(path)
-    with open(out_path, 'wb') as wb:
-        wb.write(binary)
-    del binary
+    dds_to_tex.write_tex_file(str(path), str(out_path))
 
 
 def do_the_thing_tex_to_dds(path):
     out_folder = Path(str(folder) + '_dds')
-    out_path = Path.joinpath(out_folder, Path(*path.parts[1:]).with_suffix('.dds'))
+    out_path = Path.joinpath(out_folder, Path(
+        *path.parts[1:]).with_suffix('.dds'))
     out_path.parent.mkdir(exist_ok=True, parents=True)
     try:
-        binary = tex_to_dds.get_dds_binary(path)
-        with open(out_path, 'wb') as wb:
-            wb.write(binary)
-        del binary
+        tex_to_dds.write_dds_file(str(path), str(out_path))
     except AttributeError:
-        print(path.name)
-        pass
-
-
-def do_the_thing_dx10_to_dx9(path):
-    out_folder = Path(str(folder) + '_dx9')
-    out_path = Path.joinpath(out_folder, Path(*path.parts[1:]).with_suffix('.dds'))
-    out_path.parent.mkdir(exist_ok=True, parents=True)
-    binary = dx10_to_dx9.get_dds_binary(path)
-    with open(out_path, 'wb') as wb:
-        wb.write(binary)
-    del binary
+        print(f"Error processing {path.name}")
 
 
 if __name__ == '__main__':

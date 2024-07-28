@@ -1,9 +1,8 @@
-import gc
+import io
 from struct import pack
-
+from kaitaistruct import KaitaiStream
 import numpy
 from numpy import ushort
-
 from src.parsers.tex import Tex
 from src.parsers.dds import Dds
 
@@ -22,7 +21,6 @@ def get_tex_mipmap_length_format(dds):
     width = dds.hdr.width
     fourcc = dds.hdr.ddspf.fourcc
 
-    # potentially might put in BC4 and BC5 (ATI1, ATI2)
     if fourcc == Dds_fourcc.dxt1:
         return int(height * width // 2)
     if fourcc == Dds_fourcc.dxt3 or fourcc == Dds_fourcc.dxt5 or fourcc == Dds_fourcc.bc5u:
@@ -65,21 +63,23 @@ def get_mipmap_offsets(mipmap_length, mipmap_count):
         return offset_array
     except IndexError as e:
         raise SystemExit(
-            'Image has too many mipmaps. Mipmap amount: ' + str(mipmap_count) + '. Check last \'given\' image.\nToo '
-                                                                                'many mipmaps can be caused by:\n1) '
-                                                                                'Having too large an image. '
-                                                                                'TEX supports up to 4096x4096 '
-                                                                                'resolution *only* if you are using '
-                                                                                'mipmaps.\n2) A broken cubemap. Check '
-                                                                                'if image ends in \'_e\' or \'_f\'. '
-                                                                                'You cannot import cubemaps anyway, '
-                                                                                'so get rid of it.\n 3) I don\'t '
-                                                                                'know.') from e
+            'Image has too many mipmaps. Mipmap amount: ' +
+            str(mipmap_count) + '. Check last \'given\' image.\nToo '
+            'many mipmaps can be caused by:\n1) '
+            'Having too large an image. '
+            'TEX supports up to 4096x4096 '
+            'resolution *only* if you are using '
+            'mipmaps.\n2) A broken cubemap. Check '
+            'if image ends in \'_e\' or \'_f\'. '
+            'You cannot import cubemaps anyway, '
+            'so get rid of it.\n 3) I don\'t '
+            'know.') from e
 
 
 def get_tex_offset_array(dds):
     tex_mipmap_length = get_tex_mipmap_length_format(dds)
-    tex_offset_array = get_mipmap_offsets(tex_mipmap_length, dds.hdr.mipmap_count)
+    tex_offset_array = get_mipmap_offsets(
+        tex_mipmap_length, dds.hdr.mipmap_count)
     return tex_offset_array
 
 
@@ -146,12 +146,21 @@ def get_tex_depth(dds):
 
 
 def get_tex_binary(path):
-    dds_binary = Dds.from_file(path)
+    with open(path, 'rb') as file:
+        dds_data = file.read()
+
+    dds_io = KaitaiStream(io.BytesIO(dds_data))
+    dds_binary = Dds(dds_io)
+
     header_info = pack('<IIHHHH', get_tex_attribute(), get_tex_format(dds_binary), get_tex_width(dds_binary),
                        get_tex_height(dds_binary), get_tex_depth(dds_binary), get_tex_mip_levels(dds_binary))
-    header = (header_info + lod_offset.tobytes() + get_tex_offset_array(dds_binary).tobytes())
-    body = (b''.join(dds_binary.bd.data))
-    del dds_binary
-    gc.collect()
-    tex_binary = header + body
-    return tex_binary
+    header = (header_info + lod_offset.tobytes() +
+              get_tex_offset_array(dds_binary).tobytes())
+
+    return header + dds_binary.bd.data
+
+
+def write_tex_file(input_path, output_path):
+    tex_binary = get_tex_binary(input_path)
+    with open(output_path, 'wb') as file:
+        file.write(tex_binary)
